@@ -17,6 +17,13 @@ export default function App() {
   const animationRef = useRef<number>()
   const [visitorCount] = useState(7886)
   const [drawMode, setDrawMode] = useState<'circles' | 'squares' | 'stars' | 'hearts' | 'smileys'>('circles')
+  const [showGuestbook, setShowGuestbook] = useState(false)
+  const [guestbookEntries, setGuestbookEntries] = useState<Array<{ name: string; message: string; date: string }>>([
+    { name: 'cooluser123', message: 'awesome site dude!', date: '12/10/2025' },
+    { name: 'rainbowfan', message: 'love the rainbow cursor!', date: '12/09/2025' },
+    { name: 'webmaster2000', message: 'check back soon for updates!', date: '12/08/2025' },
+  ])
+  const [newEntry, setNewEntry] = useState({ name: '', message: '' })
 
   const drawStar = (ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) => {
     let rot = Math.PI / 2 * 3
@@ -200,13 +207,6 @@ export default function App() {
     particlesRef.current = []
   }
 
-  const cycleDrawMode = () => {
-    const modes: Array<'circles' | 'squares' | 'stars' | 'hearts' | 'smileys'> = ['circles', 'squares', 'stars', 'hearts', 'smileys']
-    const currentIndex = modes.indexOf(drawMode)
-    const nextIndex = (currentIndex + 1) % modes.length
-    setDrawMode(modes[nextIndex])
-  }
-
   const getButtonText = () => {
     switch (drawMode) {
       case 'circles':
@@ -216,6 +216,22 @@ export default function App() {
       case 'stars':
         return 'stars'
       case 'hearts':
+        return 'hearts'
+      case 'smileys':
+        return 'smileys'
+      default:
+        return 'circles'
+    }
+  }
+
+  const addGuestbookEntry = () => {
+    if (newEntry.name.trim() && newEntry.message.trim()) {
+      const today = new Date()
+      const dateStr = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`
+      setGuestbookEntries([{ name: newEntry.name, message: newEntry.message, date: dateStr }, ...guestbookEntries])
+      setNewEntry({ name: '', message: '' })
+    }
+  }   case 'hearts':
         return 'hearts'
       case 'smileys':
         return 'smileys'
@@ -239,8 +255,44 @@ export default function App() {
           <span className="visitor-number">{visitorCount}</span>
           <div className="visitor-dot"></div>
         </div>
-        <button className="guestbook-btn">Click me to sign the guestbook!</button>
+        <button className="guestbook-btn" onClick={() => setShowGuestbook(true)}>Click me to sign the guestbook!</button>
       </div>
+
+      {showGuestbook && (
+        <div className="guestbook-modal">
+          <div className="guestbook-content">
+            <button className="close-btn" onClick={() => setShowGuestbook(false)}>✕</button>
+            <h2>Sign the Guestbook!</h2>
+            
+            <div className="guestbook-form">
+              <input
+                type="text"
+                placeholder="Your name"
+                value={newEntry.name}
+                onChange={(e) => setNewEntry({ ...newEntry, name: e.target.value })}
+                onKeyPress={(e) => e.key === 'Enter' && addGuestbookEntry()}
+              />
+              <textarea
+                placeholder="Your message..."
+                value={newEntry.message}
+                onChange={(e) => setNewEntry({ ...newEntry, message: e.target.value })}
+                rows={4}
+              />
+              <button onClick={addGuestbookEntry} className="submit-btn">Sign Guestbook</button>
+            </div>
+
+            <div className="guestbook-entries">
+              <h3>Previous Visitors:</h3>
+              {guestbookEntries.map((entry, idx) => (
+                <div key={idx} className="entry">
+                  <p className="entry-name"><strong>{entry.name}</strong> - {entry.date}</p>
+                  <p className="entry-message">{entry.message}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="center-text">Move your mouse!</div>
 
