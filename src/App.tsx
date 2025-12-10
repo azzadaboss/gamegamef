@@ -183,6 +183,35 @@ export default function App() {
       }
     }
 
+    // update smiley pupils based on mouse position
+    const handlePupilMove = (e: MouseEvent) => {
+      const left = document.getElementById('leftPupil')
+      const right = document.getElementById('rightPupil')
+      const smiley = document.querySelector('.smiley-button') as HTMLElement | null
+      if (!left || !right || !smiley) return
+      const rect = smiley.getBoundingClientRect()
+      const cx = rect.left + rect.width / 2
+      const cy = rect.top + rect.height / 2
+      const maxOffset = 3.5
+      const calc = (eyeCx: number, eyeCy: number) => {
+        const dx = e.clientX - eyeCx
+        const dy = e.clientY - eyeCy
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        const nx = (dx / dist) * Math.min(maxOffset, dist / 12)
+        const ny = (dy / dist) * Math.min(maxOffset, dist / 12)
+        return { nx, ny }
+      }
+      // left eye center approx
+      const leftEye = { x: rect.left + rect.width * 0.32, y: rect.top + rect.height * 0.37 }
+      const rightEye = { x: rect.left + rect.width * 0.68, y: rect.top + rect.height * 0.37 }
+      const l = calc(leftEye.x, leftEye.y)
+      const r = calc(rightEye.x, rightEye.y)
+      left.setAttribute('cx', String(20 + l.nx))
+      left.setAttribute('cy', String(24 + l.ny))
+      right.setAttribute('cx', String(44 + r.nx))
+      right.setAttribute('cy', String(24 + r.ny))
+    }
+
     const handleMouseDown = () => {
       const palette = ['#00FFFF', '#00FF00', '#FF6600', '#FFFF00', '#FF00FF']
       const colors = colorMode === 'rainbow' ? palette : ['#FF3B3B', '#FFD93D', '#6EE7B7', '#60A5FA', '#C084FC']
@@ -214,6 +243,7 @@ export default function App() {
     }
 
     window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousemove', handlePupilMove)
     window.addEventListener('mousedown', handleMouseDown)
 
     const animate = () => {
@@ -298,6 +328,7 @@ export default function App() {
     return () => {
       window.removeEventListener('resize', resizeCanvas)
       window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mousemove', handlePupilMove)
       window.removeEventListener('mousedown', handleMouseDown)
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
@@ -444,6 +475,28 @@ export default function App() {
       )}
 
       <div className="fps-display">{fps} FPS</div>
+
+      <div className="smiley-button" role="button" tabIndex={0} onClick={() => (window.location.href = '/blank.html')} onKeyPress={(e) => { if (e.key === 'Enter') window.location.href = '/blank.html' }} aria-label="Smiley link">
+        <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <g filter="url(#glow)">
+            <circle cx="32" cy="32" r="30" fill="url(#smileGradient)" stroke="#fff" strokeOpacity="0.2" />
+          </g>
+          <circle cx="20" cy="24" r="8" fill="#fff" />
+          <circle cx="44" cy="24" r="8" fill="#fff" />
+          <circle id="leftPupil" cx="20" cy="24" r="3" fill="#000" />
+          <circle id="rightPupil" cx="44" cy="24" r="3" fill="#000" />
+          <path d="M20 40 Q32 50 44 40" stroke="#000" strokeWidth="3" fill="none" strokeLinecap="round" />
+        </svg>
+      </div>
 
       <div className="netscape-box">
         <span>Best viewed in Netscape Navigator 4.0</span>

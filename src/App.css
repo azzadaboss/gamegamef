@@ -443,3 +443,21 @@
   z-index: 1100;
   font-family: monospace;
 }
+
+.smiley-button {
+  position: fixed;
+  top: 6px;
+  right: 8px;
+  width: 64px;
+  height: 64px;
+  z-index: 1200;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smiley-button svg { pointer-events: none; }
+
+.smiley-button:focus { outline: 2px dashed #FFFF00; outline-offset: 4px; }
+
