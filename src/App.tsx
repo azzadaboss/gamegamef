@@ -20,21 +20,19 @@ export default function App() {
 
   const drawStar = (ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) => {
     let rot = Math.PI / 2 * 3
-    let x = cx
-    let y = cy
     const step = Math.PI / spikes
 
     ctx.beginPath()
     ctx.moveTo(cx, cy - outerRadius)
     for (let i = 0; i < spikes; i++) {
-      x = cx + Math.cos(rot) * outerRadius
-      y = cy + Math.sin(rot) * outerRadius
+      const x = cx + Math.cos(rot) * outerRadius
+      const y = cy + Math.sin(rot) * outerRadius
       ctx.lineTo(x, y)
       rot += step
 
-      x = cx + Math.cos(rot) * innerRadius
-      y = cy + Math.sin(rot) * innerRadius
-      ctx.lineTo(x, y)
+      const ix = cx + Math.cos(rot) * innerRadius
+      const iy = cy + Math.sin(rot) * innerRadius
+      ctx.lineTo(ix, iy)
       rot += step
     }
     ctx.lineTo(cx, cy - outerRadius)
@@ -43,12 +41,18 @@ export default function App() {
   }
 
   const drawHeart = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number) => {
+    const s = size
     ctx.beginPath()
-    ctx.moveTo(x, y + size)
-    ctx.bezierCurveTo(x + size, y, x + size * 2, y, x + size * 2, y + size)
-    ctx.bezierCurveTo(x + size * 2, y + size * 2, x + size, y + size * 2, x, y + size * 2)
-    ctx.bezierCurveTo(x - size, y + size * 2, x - size * 2, y + size * 2, x - size * 2, y + size)
-    ctx.bezierCurveTo(x - size * 2, y, x - size, y, x - size, y + size)
+    ctx.moveTo(x, y - s * 0.4)
+    
+    // Left curve
+    ctx.bezierCurveTo(x - s * 0.6, y - s * 0.8, x - s * 0.8, y - s * 0.4, x - s * 0.3, y + s * 0.3)
+    // Bottom point
+    ctx.bezierCurveTo(x, y + s * 0.8, x, y + s * 0.8, x, y + s * 0.8)
+    // Right curve
+    ctx.bezierCurveTo(x, y + s * 0.8, x, y + s * 0.8, x + s * 0.3, y + s * 0.3)
+    ctx.bezierCurveTo(x + s * 0.8, y - s * 0.4, x + s * 0.6, y - s * 0.8, x, y - s * 0.4)
+    
     ctx.closePath()
     ctx.fill()
   }
