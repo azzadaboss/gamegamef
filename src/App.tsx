@@ -18,11 +18,20 @@ export default function App() {
   const [visitorCount] = useState(7886)
   const [drawMode, setDrawMode] = useState<'circles' | 'squares' | 'stars' | 'hearts' | 'smileys'>('circles')
   const [showGuestbook, setShowGuestbook] = useState(false)
-  const [guestbookEntries, setGuestbookEntries] = useState<Array<{ name: string; message: string; date: string }>>([
+  const defaultEntries = [
     { name: 'cooluser123', message: 'awesome site dude!', date: '12/10/2025' },
     { name: 'rainbowfan', message: 'love the rainbow cursor!', date: '12/09/2025' },
     { name: 'webmaster2000', message: 'check back soon for updates!', date: '12/08/2025' },
-  ])
+  ]
+
+  const [guestbookEntries, setGuestbookEntries] = useState<Array<{ name: string; message: string; date: string }>>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('guestbookEntries') : null
+      return raw ? JSON.parse(raw) : defaultEntries
+    } catch (e) {
+      return defaultEntries
+    }
+  })
   const [newEntry, setNewEntry] = useState({ name: '', message: '' })
   // Settings / extras
   const [showSettings, setShowSettings] = useState(false)
@@ -34,6 +43,48 @@ export default function App() {
   const [fps, setFps] = useState(0)
   const starsRef = useRef<{ x: number; y: number; r: number; phase: number }[]>([])
   const fpsCounterRef = useRef({ frames: 0, last: Date.now() })
+
+  // Load persisted settings (if any)
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const s = localStorage.getItem('rg_settings')
+        if (s) {
+          const parsed = JSON.parse(s)
+          if (parsed.sizeBase != null) setSizeBase(parsed.sizeBase)
+          if (parsed.decayRate != null) setDecayRate(parsed.decayRate)
+          if (parsed.colorMode != null) setColorMode(parsed.colorMode)
+          if (parsed.showStars != null) setShowStars(parsed.showStars)
+          if (parsed.soundOn != null) setSoundOn(parsed.soundOn)
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [])
+
+  // Persist settings when they change
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const s = { sizeBase, decayRate, colorMode, showStars, soundOn }
+        localStorage.setItem('rg_settings', JSON.stringify(s))
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [sizeBase, decayRate, colorMode, showStars, soundOn])
+
+  // Persist guestbook entries when they change
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('guestbookEntries', JSON.stringify(guestbookEntries))
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [guestbookEntries])
 
   const drawStar = (ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) => {
     let rot = Math.PI / 2 * 3
