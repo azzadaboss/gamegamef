@@ -57,6 +57,42 @@
       })()
     </script>
 
+    <script>
+      // Runtime enforcement: ensure smiley is last in the body, visible, and above any stacking contexts.
+      (function(){
+        const smiley = document.getElementById('global-smiley')
+        if (!smiley) return
+        try {
+          // Move to be last child of body (avoid being inside transformed containers)
+          document.body.appendChild(smiley)
+
+          // Force styles with high specificity
+          smiley.style.setProperty('position', 'fixed', 'important')
+          smiley.style.setProperty('top', '0px', 'important')
+          smiley.style.setProperty('right', '0px', 'important')
+          smiley.style.setProperty('width', '80px', 'important')
+          smiley.style.setProperty('height', '80px', 'important')
+          smiley.style.setProperty('z-index', '2147483647', 'important')
+          smiley.style.setProperty('pointer-events', 'auto', 'important')
+          smiley.style.setProperty('display', 'flex', 'important')
+          smiley.style.setProperty('align-items', 'center', 'important')
+          smiley.style.setProperty('justify-content', 'center', 'important')
+          smiley.style.setProperty('padding', '6px', 'important')
+          smiley.style.setProperty('opacity', '1', 'important')
+          smiley.style.setProperty('transform', 'none', 'important')
+
+          // Make sure body isn't clipping fixed children
+          try { document.body.style.setProperty('overflow', 'visible', 'important') } catch (e) {}
+
+          // Add a bright debug outline so it's obvious; will be removed later
+          smiley.style.setProperty('outline', '3px solid rgba(255,0,0,0.9)', 'important')
+          smiley.style.setProperty('outline-offset', '0px', 'important')
+        } catch (e) {
+          // ignore
+        }
+      })()
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
