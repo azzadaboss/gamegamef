@@ -1,0 +1,51 @@
+.container {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0a14 0%, #1a1a2e 50%, #16213e 100%);
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.ui {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ui h1 {
+  font-size: 4rem;
+  margin: 0;
+  font-weight: 700;
+  text-shadow: 0 0 20px rgba(255, 0, 110, 0.5);
+  animation: glow 2s ease-in-out infinite;
+}
+
+.ui p {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 300;
+}
+
+@keyframes glow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(255, 0, 110, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 40px rgba(255, 0, 110, 0.8);
+  }
+}
