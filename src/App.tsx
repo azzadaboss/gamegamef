@@ -488,7 +488,7 @@ export default function App() {
             </filter>
           </defs>
           <g filter="url(#glow)">
-            <circle cx="32" cy="32" r="30" fill="url(#smileGradient)" stroke="#fff" strokeOpacity="0.2" />
+            <circle cx="32" cy="32" r="30" fill="#FFD93D" stroke="#fff" strokeOpacity="0.2" />
           </g>
           <circle cx="20" cy="24" r="8" fill="#fff" />
           <circle cx="44" cy="24" r="8" fill="#fff" />

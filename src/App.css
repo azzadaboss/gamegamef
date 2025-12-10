@@ -457,7 +457,9 @@
   justify-content: center;
 }
 
-.smiley-button svg { pointer-events: none; }
+.smiley-button svg { pointer-events: auto; display: block; }
 
 .smiley-button:focus { outline: 2px dashed #FFFF00; outline-offset: 4px; }
+
+.smiley-button { background: radial-gradient(circle at 30% 30%, #FFF6D6, #FFD93D 40%, #FFB830 100%); border-radius: 50%; padding: 6px; box-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 18px rgba(255,200,0,0.25); border: 2px solid rgba(255,255,255,0.25); }
 
