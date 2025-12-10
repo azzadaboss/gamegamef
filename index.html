@@ -7,6 +7,19 @@
     <meta name="description" content="Create beautiful rainbow trails by moving your mouse across the canvas. An interactive visual experience." />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+      /* Custom happy cursor styles */
+      #happy-cursor { position: fixed; left: 0; top: 0; width: 56px; height: 56px; pointer-events: none; z-index: 2147483646; transform: translate3d(0,0,0); transition: transform 0.04s linear; }
+      #happy-cursor svg { width: 100%; height: 100%; display: block; }
+      #happy-cursor .eye { transform-origin: center center; animation: blink 4s infinite; }
+      #happy-cursor .eye.left { animation-delay: 0s; }
+      #happy-cursor .eye.right { animation-delay: 0.25s; }
+      @keyframes blink { 0%, 96% { transform: scaleY(1); } 97% { transform: scaleY(0.02); } 100% { transform: scaleY(1); } }
+      #happy-cursor .mouth { transform-origin: center center; transition: transform 0.18s linear; }
+      #happy-cursor.mouth-open .mouth { transform: scaleY(1.35); }
+      /* hide native cursor */
+      html.hide-native-cursor, body.hide-native-cursor { cursor: none !important; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
@@ -54,6 +67,77 @@
         window.addEventListener('mousemove', onMove)
         smiley.addEventListener('click', () => { window.location.href = '/blank.html' })
         smiley.addEventListener('keydown', (e) => { if (e.key === 'Enter') window.location.href = '/blank.html' })
+      })()
+    </script>
+
+    <!-- Custom cursor: happy face that blinks and has a moving mouth -->
+    <div id="happy-cursor" aria-hidden="true">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <defs></defs>
+        <circle cx="32" cy="32" r="30" fill="#FFD93D" stroke="#fff" stroke-opacity="0.15" />
+        <g class="eye left">
+          <circle cx="22" cy="24" r="6" fill="#fff" />
+          <circle id="cursor-left-pupil" cx="22" cy="24" r="2.5" fill="#000" />
+        </g>
+        <g class="eye right">
+          <circle cx="42" cy="24" r="6" fill="#fff" />
+          <circle id="cursor-right-pupil" cx="42" cy="24" r="2.5" fill="#000" />
+        </g>
+        <g class="mouth">
+          <path id="cursor-mouth" d="M22 40 Q32 48 42 40" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round" />
+        </g>
+      </svg>
+    </div>
+
+    <script>
+      (function(){
+        const cursor = document.getElementById('happy-cursor')
+        const leftPupil = document.getElementById('cursor-left-pupil')
+        const rightPupil = document.getElementById('cursor-right-pupil')
+        if (!cursor || !leftPupil || !rightPupil) return
+
+        // Hide native cursor
+        document.documentElement.classList.add('hide-native-cursor')
+        document.body.classList.add('hide-native-cursor')
+
+        let mouthOpen = false
+        setInterval(() => {
+          mouthOpen = !mouthOpen
+          if (mouthOpen) cursor.classList.add('mouth-open')
+          else cursor.classList.remove('mouth-open')
+        }, 600)
+
+        // Subtle pupil idle movement using time-based sine
+        function animatePupilsGlobal(e){
+          const rect = cursor.getBoundingClientRect()
+          const cx = rect.left + rect.width / 2
+          const cy = rect.top + rect.height / 2
+          // compute small offsets based on mouse relative to center
+          const max = 2.5
+          const dx = (e.clientX - cx) / 30
+          const dy = (e.clientY - cy) / 30
+          const lx = Math.max(-max, Math.min(max, dx))
+          const ly = Math.max(-max, Math.min(max, dy))
+          leftPupil.setAttribute('cx', String(22 + lx))
+          leftPupil.setAttribute('cy', String(24 + ly))
+          rightPupil.setAttribute('cx', String(42 + lx))
+          rightPupil.setAttribute('cy', String(24 + ly))
+        }
+
+        window.addEventListener('mousemove', (e) => {
+          // position cursor centered at mouse
+          const w = cursor.offsetWidth
+          const h = cursor.offsetHeight
+          cursor.style.left = (e.clientX - w/2) + 'px'
+          cursor.style.top = (e.clientY - h/2) + 'px'
+          animatePupilsGlobal(e)
+        }, { passive: true })
+
+        // Also animate pupils gently when no movement
+        setInterval(() => {
+          const ev = { clientX: window.innerWidth/2, clientY: window.innerHeight/2 }
+          animatePupilsGlobal(ev)
+        }, 900)
       })()
     </script>
 
