@@ -5,7 +5,7 @@
   padding: 0;
   overflow: hidden;
   background: linear-gradient(135deg, #0b1450 0%, #1a1a4e 50%, #2a0a4e 100%);
-  font-family: Arial, sans-serif;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
   color: white;
 }
 
@@ -14,18 +14,38 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 30px;
-  background: linear-gradient(90deg, #FFD700, #FF00FF, #00FFFF);
-  color: #000;
+  height: 35px;
+  background: linear-gradient(90deg, #000, #1a1a1a, #000);
+  color: #FFFF00;
   display: flex;
   align-items: center;
-  padding: 0 10px;
-  font-size: 12px;
+  padding: 0 20px;
+  font-size: 14px;
   font-weight: bold;
+  font-family: 'Comic Sans MS', cursive;
   z-index: 1000;
   overflow: hidden;
   white-space: nowrap;
-  animation: scroll 20s linear infinite;
+  border-bottom: 2px solid #FFFF00;
+  box-shadow: 0 4px 8px rgba(255, 255, 0, 0.3);
+}
+
+.banner::before {
+  content: '📺 BREAKING NEWS: ';
+  margin-right: 15px;
+  color: #FF0000;
+  font-weight: 900;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.banner-text {
+  animation: scroll 25s linear infinite;
+  display: inline-block;
 }
 
 @keyframes scroll {

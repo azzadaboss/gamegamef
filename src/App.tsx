@@ -134,7 +134,9 @@ export default function App() {
 
   return (
     <div className="container">
-      <div className="banner">Welcome to my AWESOME homepage! This site is under construction! Come back soon for more cool stuff! Sign my guestbook!</div>
+      <div className="banner">
+        <span className="banner-text">Welcome to my AWESOME homepage! This site is under construction! Come back soon for more cool stuff! Sign my guestbook!</span>
+      </div>
       <canvas ref={canvasRef} className="canvas" />
       
       <div className="info-box">
