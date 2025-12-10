@@ -10,6 +10,53 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Top-right smiley placed outside React root to ensure it's above everything -->
+    <div id="global-smiley" style="position:fixed;top:0;right:0;width:80px;height:80px;z-index:2147483647;pointer-events:auto;display:flex;align-items:center;justify-content:center;padding:6px;">
+      <svg id="global-smile-svg" width="68" height="68" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+        <circle cx="32" cy="32" r="30" fill="#FFD93D" stroke="#fff" stroke-opacity="0.2" />
+        <circle cx="20" cy="24" r="8" fill="#fff" />
+        <circle cx="44" cy="24" r="8" fill="#fff" />
+        <circle id="global-left-pupil" cx="20" cy="24" r="3" fill="#000" />
+        <circle id="global-right-pupil" cx="44" cy="24" r="3" fill="#000" />
+        <path d="M20 40 Q32 50 44 40" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round" />
+      </svg>
+    </div>
+
+    <script>
+      (function(){
+        const smiley = document.getElementById('global-smiley')
+        const left = document.getElementById('global-left-pupil')
+        const right = document.getElementById('global-right-pupil')
+        if (!smiley || !left || !right) return
+
+        const maxOffset = 4
+        function onMove(e){
+          const rect = smiley.getBoundingClientRect()
+          const leftEye = { x: rect.left + rect.width * 0.32, y: rect.top + rect.height * 0.37 }
+          const rightEye = { x: rect.left + rect.width * 0.68, y: rect.top + rect.height * 0.37 }
+          const calc = (eye, ex, ey) => {
+            const dx = ex - eye.x
+            const dy = ey - eye.y
+            const dist = Math.sqrt(dx*dx+dy*dy) || 1
+            const nx = (dx / dist) * Math.min(maxOffset, dist / 12)
+            const ny = (dy / dist) * Math.min(maxOffset, dist / 12)
+            return { nx, ny }
+          }
+          const l = calc(leftEye, e.clientX, e.clientY)
+          const r = calc(rightEye, e.clientX, e.clientY)
+          left.setAttribute('cx', String(20 + l.nx))
+          left.setAttribute('cy', String(24 + l.ny))
+          right.setAttribute('cx', String(44 + r.nx))
+          right.setAttribute('cy', String(24 + r.ny))
+        }
+
+        window.addEventListener('mousemove', onMove)
+        smiley.addEventListener('click', () => { window.location.href = '/blank.html' })
+        smiley.addEventListener('keydown', (e) => { if (e.key === 'Enter') window.location.href = '/blank.html' })
+      })()
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
