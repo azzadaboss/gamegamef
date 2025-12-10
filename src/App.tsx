@@ -16,7 +16,63 @@ export default function App() {
   const mouseRef = useRef({ x: 0, y: 0 })
   const animationRef = useRef<number>()
   const [visitorCount] = useState(7886)
-  const [drawMode, setDrawMode] = useState<'particles' | 'circle'>('particles')
+  const [drawMode, setDrawMode] = useState<'circles' | 'squares' | 'stars' | 'hearts' | 'smileys'>('circles')
+
+  const drawStar = (ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) => {
+    let rot = Math.PI / 2 * 3
+    let x = cx
+    let y = cy
+    const step = Math.PI / spikes
+
+    ctx.beginPath()
+    ctx.moveTo(cx, cy - outerRadius)
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerRadius
+      y = cy + Math.sin(rot) * outerRadius
+      ctx.lineTo(x, y)
+      rot += step
+
+      x = cx + Math.cos(rot) * innerRadius
+      y = cy + Math.sin(rot) * innerRadius
+      ctx.lineTo(x, y)
+      rot += step
+    }
+    ctx.lineTo(cx, cy - outerRadius)
+    ctx.closePath()
+    ctx.fill()
+  }
+
+  const drawHeart = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number) => {
+    ctx.beginPath()
+    ctx.moveTo(x, y + size)
+    ctx.bezierCurveTo(x + size, y, x + size * 2, y, x + size * 2, y + size)
+    ctx.bezierCurveTo(x + size * 2, y + size * 2, x + size, y + size * 2, x, y + size * 2)
+    ctx.bezierCurveTo(x - size, y + size * 2, x - size * 2, y + size * 2, x - size * 2, y + size)
+    ctx.bezierCurveTo(x - size * 2, y, x - size, y, x - size, y + size)
+    ctx.closePath()
+    ctx.fill()
+  }
+
+  const drawSmiley = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, r: number, g: number, b: number, alpha: number) => {
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`
+    ctx.beginPath()
+    ctx.arc(x, y, size, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`
+    ctx.beginPath()
+    ctx.arc(x - size * 0.35, y - size * 0.2, size * 0.15, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(x + size * 0.35, y - size * 0.2, size * 0.15, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.strokeStyle = `rgba(0, 0, 0, ${alpha})`
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.arc(x, y + size * 0.2, size * 0.35, 0, Math.PI)
+    ctx.stroke()
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -39,34 +95,30 @@ export default function App() {
       // Create particles at mouse position
       const colors = ['#00FFFF', '#00FF00', '#FF6600', '#FFFF00', '#FF00FF']
 
-      if (drawMode === 'particles') {
-        for (let i = 0; i < 2; i++) {
-          const angle = Math.random() * Math.PI * 2
-          const velocity = 1 + Math.random() * 2
-          particlesRef.current.push({
-            x: mouseRef.current.x,
-            y: mouseRef.current.y,
-            vx: Math.cos(angle) * velocity,
-            vy: Math.sin(angle) * velocity,
-            life: 1,
-            color: colors[Math.floor(Math.random() * colors.length)],
-          })
-        }
-      }
-    }
-
-    const handleMouseDown = () => {
-      if (drawMode === 'circle') {
-        const colors = ['#00FFFF', '#00FF00', '#FF6600', '#FFFF00', '#FF00FF']
+      for (let i = 0; i < 2; i++) {
+        const angle = Math.random() * Math.PI * 2
+        const velocity = 1 + Math.random() * 2
         particlesRef.current.push({
           x: mouseRef.current.x,
           y: mouseRef.current.y,
-          vx: 0,
-          vy: 0,
+          vx: Math.cos(angle) * velocity,
+          vy: Math.sin(angle) * velocity,
           life: 1,
           color: colors[Math.floor(Math.random() * colors.length)],
         })
       }
+    }
+
+    const handleMouseDown = () => {
+      const colors = ['#00FFFF', '#00FF00', '#FF6600', '#FFFF00', '#FF00FF']
+      particlesRef.current.push({
+        x: mouseRef.current.x,
+        y: mouseRef.current.y,
+        vx: 0,
+        vy: 0,
+        life: 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      })
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -82,6 +134,8 @@ export default function App() {
 
       particlesRef.current.forEach((particle: Particle) => {
         particle.x += particle.vx
+      particlesRef.current.forEach((particle: Particle) => {
+        particle.x += particle.vx
         particle.y += particle.vy
         particle.vy += 0.08
         particle.life -= 0.015
@@ -92,21 +146,31 @@ export default function App() {
         const g = parseInt(hex.substring(2, 4), 16)
         const b = parseInt(hex.substring(4, 6), 16)
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`
+        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`
 
         const size = 6 + Math.random() * 4
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, size * Math.max(0.3, particle.life), 0, Math.PI * 2)
-        ctx.fill()
 
-        // Glow effect
-        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`
-        ctx.lineWidth = 2
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, size * Math.max(0.3, particle.life) + 3, 0, Math.PI * 2)
-        ctx.stroke()
-      })
-
-      animationRef.current = requestAnimationFrame(animate)
+        if (drawMode === 'circles') {
+          ctx.beginPath()
+          ctx.arc(particle.x, particle.y, size * Math.max(0.3, particle.life), 0, Math.PI * 2)
+          ctx.fill()
+          ctx.lineWidth = 2
+          ctx.beginPath()
+          ctx.arc(particle.x, particle.y, size * Math.max(0.3, particle.life) + 3, 0, Math.PI * 2)
+          ctx.stroke()
+        } else if (drawMode === 'squares') {
+          const s = size * Math.max(0.3, particle.life)
+          ctx.fillRect(particle.x - s, particle.y - s, s * 2, s * 2)
+          ctx.lineWidth = 2
+          ctx.strokeRect(particle.x - s - 3, particle.y - s - 3, s * 2 + 6, s * 2 + 6)
+        } else if (drawMode === 'stars') {
+          drawStar(ctx, particle.x, particle.y, 5, size * Math.max(0.3, particle.life), size * Math.max(0.5, particle.life))
+        } else if (drawMode === 'hearts') {
+          drawHeart(ctx, particle.x, particle.y, size * Math.max(0.3, particle.life))
+        } else if (drawMode === 'smileys') {
+          drawSmiley(ctx, particle.x, particle.y, size * Math.max(0.3, particle.life) + 3, r, g, b, alpha)
+        }
+      })imationRef.current = requestAnimationFrame(animate)
     }
 
     animate()
@@ -132,6 +196,30 @@ export default function App() {
     particlesRef.current = []
   }
 
+  const cycleDrawMode = () => {
+    const modes: Array<'circles' | 'squares' | 'stars' | 'hearts' | 'smileys'> = ['circles', 'squares', 'stars', 'hearts', 'smileys']
+    const currentIndex = modes.indexOf(drawMode)
+    const nextIndex = (currentIndex + 1) % modes.length
+    setDrawMode(modes[nextIndex])
+  }
+
+  const getButtonText = () => {
+    switch (drawMode) {
+      case 'circles':
+        return 'circles'
+      case 'squares':
+        return 'squares'
+      case 'stars':
+        return 'stars'
+      case 'hearts':
+        return 'hearts'
+      case 'smileys':
+        return 'smileys'
+      default:
+        return 'circles'
+    }
+  }
+
   return (
     <div className="container">
       <div className="banner">
@@ -154,8 +242,8 @@ export default function App() {
 
       <div className="controls">
         <button className="btn btn-clear" onClick={clearCanvas}>Clear</button>
-        <button className="btn btn-circle" onClick={() => setDrawMode(drawMode === 'circle' ? 'particles' : 'circle')}>
-          circle
+        <button className="btn btn-circle" onClick={cycleDrawMode}>
+          {getButtonText()}
         </button>
         <button className="btn btn-settings">Settings</button>
       </div>
