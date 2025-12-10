@@ -134,8 +134,6 @@ export default function App() {
 
       particlesRef.current.forEach((particle: Particle) => {
         particle.x += particle.vx
-      particlesRef.current.forEach((particle: Particle) => {
-        particle.x += particle.vx
         particle.y += particle.vy
         particle.vy += 0.08
         particle.life -= 0.015
@@ -170,7 +168,9 @@ export default function App() {
         } else if (drawMode === 'smileys') {
           drawSmiley(ctx, particle.x, particle.y, size * Math.max(0.3, particle.life) + 3, r, g, b, alpha)
         }
-      })imationRef.current = requestAnimationFrame(animate)
+      })
+
+      animationRef.current = requestAnimationFrame(animate)
     }
 
     animate()
