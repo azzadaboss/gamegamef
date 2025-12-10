@@ -24,6 +24,16 @@ export default function App() {
     { name: 'webmaster2000', message: 'check back soon for updates!', date: '12/08/2025' },
   ])
   const [newEntry, setNewEntry] = useState({ name: '', message: '' })
+  // Settings / extras
+  const [showSettings, setShowSettings] = useState(false)
+  const [sizeBase, setSizeBase] = useState(8)
+  const [decayRate, setDecayRate] = useState(0.015)
+  const [colorMode, setColorMode] = useState<'rainbow' | 'palette'>('rainbow')
+  const [showStars, setShowStars] = useState(true)
+  const [soundOn, setSoundOn] = useState(true)
+  const [fps, setFps] = useState(0)
+  const starsRef = useRef<{ x: number; y: number; r: number; phase: number }[]>([])
+  const fpsCounterRef = useRef({ frames: 0, last: Date.now() })
 
   const drawStar = (ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) => {
     let rot = Math.PI / 2 * 3
@@ -104,11 +114,13 @@ export default function App() {
       mouseRef.current = { x: e.clientX, y: e.clientY }
 
       // Create particles at mouse position
-      const colors = ['#00FFFF', '#00FF00', '#FF6600', '#FFFF00', '#FF00FF']
+      const palette = ['#00FFFF', '#00FF00', '#FF6600', '#FFFF00', '#FF00FF']
+      const altPalette = ['#FF3B3B', '#FFD93D', '#6EE7B7', '#60A5FA', '#C084FC']
+      const colors = colorMode === 'rainbow' ? palette : altPalette
 
       for (let i = 0; i < 2; i++) {
         const angle = Math.random() * Math.PI * 2
-        const velocity = 1 + Math.random() * 2
+        const velocity = 0.5 + Math.random() * 2
         particlesRef.current.push({
           x: mouseRef.current.x,
           y: mouseRef.current.y,
@@ -121,7 +133,8 @@ export default function App() {
     }
 
     const handleMouseDown = () => {
-      const colors = ['#00FFFF', '#00FF00', '#FF6600', '#FFFF00', '#FF00FF']
+      const palette = ['#00FFFF', '#00FF00', '#FF6600', '#FFFF00', '#FF00FF']
+      const colors = colorMode === 'rainbow' ? palette : ['#FF3B3B', '#FFD93D', '#6EE7B7', '#60A5FA', '#C084FC']
       particlesRef.current.push({
         x: mouseRef.current.x,
         y: mouseRef.current.y,
@@ -130,6 +143,23 @@ export default function App() {
         life: 1,
         color: colors[Math.floor(Math.random() * colors.length)],
       })
+      if (soundOn) {
+        try {
+          const Ac = (window.AudioContext || (window as any).webkitAudioContext)
+          const ac = new Ac()
+          const o = ac.createOscillator()
+          const g = ac.createGain()
+          o.type = 'sine'
+          o.frequency.value = 440 + Math.random() * 300
+          g.gain.value = 0.02
+          o.connect(g)
+          g.connect(ac.destination)
+          o.start()
+          setTimeout(() => { o.stop(); ac.close() }, 140)
+        } catch (e) {
+          // ignore
+        }
+      }
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -140,14 +170,33 @@ export default function App() {
       ctx.fillStyle = 'rgba(11, 20, 80, 0.15)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
+      // Stars background
+      if (showStars) {
+        if (starsRef.current.length === 0) {
+          for (let i = 0; i < 120; i++) {
+            starsRef.current.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.5 + 0.5, phase: Math.random() * Math.PI * 2 })
+          }
+        }
+        const t = Date.now() / 1000
+        ctx.save()
+        for (const s of starsRef.current) {
+          const a = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(s.phase + t * 2))
+          ctx.fillStyle = `rgba(255,255,255,${a})`
+          ctx.beginPath()
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+          ctx.fill()
+        }
+        ctx.restore()
+      }
+
       // Update and draw particles
       particlesRef.current = particlesRef.current.filter((p: Particle) => p.life > 0)
 
       particlesRef.current.forEach((particle: Particle) => {
         particle.x += particle.vx
         particle.y += particle.vy
-        particle.vy += 0.08
-        particle.life -= 0.015
+        particle.vy += 0.06
+        particle.life -= decayRate
 
         const alpha = particle.life
         const hex = particle.color.substring(1)
@@ -157,7 +206,7 @@ export default function App() {
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`
         ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`
 
-        const size = 6 + Math.random() * 4
+        const size = sizeBase + Math.random() * (sizeBase * 0.6)
 
         if (drawMode === 'circles') {
           ctx.beginPath()
@@ -181,6 +230,15 @@ export default function App() {
         }
       })
 
+      // FPS counting
+      fpsCounterRef.current.frames++
+      const now = Date.now()
+      if (now - fpsCounterRef.current.last >= 500) {
+        setFps(Math.round((fpsCounterRef.current.frames * 1000) / (now - fpsCounterRef.current.last)))
+        fpsCounterRef.current.frames = 0
+        fpsCounterRef.current.last = now
+      }
+
       animationRef.current = requestAnimationFrame(animate)
     }
 
@@ -194,7 +252,7 @@ export default function App() {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [drawMode])
+  }, [drawMode, colorMode, decayRate, sizeBase, showStars, soundOn])
 
   const clearCanvas = () => {
     if (canvasRef.current) {
@@ -301,8 +359,40 @@ export default function App() {
         <button className="btn btn-circle" onClick={cycleDrawMode}>
           {getButtonText()}
         </button>
-        <button className="btn btn-settings">Settings</button>
+        <button className="btn btn-settings" onClick={() => setShowSettings(true)}>Settings</button>
       </div>
+
+      {showSettings && (
+        <div className="settings-modal">
+          <div className="settings-content">
+            <button className="close-btn" onClick={() => setShowSettings(false)}>✕</button>
+            <h3>Settings</h3>
+            <div className="setting-row">
+              <label>Particle size: {sizeBase}</label>
+              <input type="range" min={2} max={24} value={sizeBase} onChange={(e) => setSizeBase(Number(e.target.value))} />
+            </div>
+            <div className="setting-row">
+              <label>Decay rate: {decayRate.toFixed(3)}</label>
+              <input type="range" min={0.004} max={0.05} step={0.001} value={decayRate} onChange={(e) => setDecayRate(Number(e.target.value))} />
+            </div>
+            <div className="setting-row">
+              <label>Color mode:</label>
+              <select value={colorMode} onChange={(e) => setColorMode(e.target.value as any)}>
+                <option value="rainbow">Rainbow</option>
+                <option value="palette">Pastel</option>
+              </select>
+            </div>
+            <div className="setting-row">
+              <label><input type="checkbox" checked={showStars} onChange={(e) => setShowStars(e.target.checked)} /> Stars background</label>
+            </div>
+            <div className="setting-row">
+              <label><input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} /> Click sound</label>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="fps-display">{fps} FPS</div>
 
       <div className="netscape-box">
         <span>Best viewed in Netscape Navigator 4.0</span>
