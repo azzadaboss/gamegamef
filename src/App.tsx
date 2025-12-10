@@ -231,13 +231,13 @@ export default function App() {
       setGuestbookEntries([{ name: newEntry.name, message: newEntry.message, date: dateStr }, ...guestbookEntries])
       setNewEntry({ name: '', message: '' })
     }
-  }   case 'hearts':
-        return 'hearts'
-      case 'smileys':
-        return 'smileys'
-      default:
-        return 'circles'
-    }
+  }
+
+  const cycleDrawMode = () => {
+    const modes: Array<'circles' | 'squares' | 'stars' | 'hearts' | 'smileys'> = ['circles', 'squares', 'stars', 'hearts', 'smileys']
+    const currentIndex = modes.indexOf(drawMode)
+    const nextIndex = (currentIndex + 1) % modes.length
+    setDrawMode(modes[nextIndex])
   }
 
   return (
