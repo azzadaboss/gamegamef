@@ -446,19 +446,21 @@
 
 .smiley-button {
   position: fixed;
-  top: 6px;
-  right: 6px;
-  width: 72px;
-  height: 72px;
-  z-index: 9999;
+  top: 0;
+  right: 0;
+  width: 80px;
+  height: 80px;
+  padding: 6px;
+  z-index: 99999; /* above banner */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0;
+  pointer-events: auto;
 }
 
-.smiley-button svg { pointer-events: auto; display: block; }
+.smiley-button svg { pointer-events: auto; display: block; width: 100%; height: 100%; }
 
 .smiley-button:focus { outline: 2px dashed #FFFF00; outline-offset: 4px; }
 
